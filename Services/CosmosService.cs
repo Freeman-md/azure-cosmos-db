@@ -39,7 +39,8 @@ class CosmosService
         return database.GetContainer(containerName);
     }
 
-    public async Task<ItemResponse<T>> CreateItem<T>(string databaseName, string containerName, T item, string partitionKey) {
+    public async Task<ItemResponse<T>> CreateItem<T>(string databaseName, string containerName, T item, string partitionKey)
+    {
         Container container = GetContainer(databaseName, containerName);
 
         return await container.UpsertItemAsync(
@@ -48,7 +49,8 @@ class CosmosService
         );
     }
 
-    public async Task<ItemResponse<T>> GetItem<T>(string databaseName, string containerName, string id, string partitionKey) {
+    public async Task<ItemResponse<T>> GetItem<T>(string databaseName, string containerName, string id, string partitionKey)
+    {
         Container container = GetContainer(databaseName, containerName);
 
         return await container.ReadItemAsync<T>(
@@ -57,10 +59,36 @@ class CosmosService
         );
     }
 
-    public async Task DeleteItem<T>(string databaseName, string containerName, string id, string partitionKey) {
+    public async Task DeleteItem<T>(string databaseName, string containerName, string id, string partitionKey)
+    {
         Container container = GetContainer(databaseName, containerName);
 
         await container.DeleteItemAsync<T>(id, new PartitionKey(partitionKey));
+    }
+
+    public async Task<List<T>> GetAllItems<T>(string databaseName, string containerName, string partitionKey)
+    {
+        Container container = GetContainer(databaseName, containerName);
+        string query = "SELECT * FROM products p WHERE p.category = @category";
+
+        var queryDef = new QueryDefinition(query)
+        .WithParameter("@category", partitionKey);
+
+        using FeedIterator<T> feed = container.GetItemQueryIterator<T>(
+            queryDefinition: queryDef
+        );
+
+        List<T> items = new();
+        while (feed.HasMoreResults)
+        {
+            FeedResponse<T> response = await feed.ReadNextAsync();
+            foreach (T item in response)
+            {
+                items.Add(item);
+            }
+        }
+
+        return items;
     }
 
 }
