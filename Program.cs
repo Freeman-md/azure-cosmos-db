@@ -44,6 +44,13 @@ static async Task<ItemResponse<T>> GetItem<T>(CosmosClient client, string databa
     return await cosmosService.GetItem<T>(databaseName, containerName, id, partitionKey);
 }
 
+static async Task DeleteItem<T>(CosmosClient client, string databaseName, string containerName, string id, string partitionKey)
+{
+    CosmosService cosmosService = new CosmosService(client);
+
+    await cosmosService.DeleteItem<T>(databaseName, containerName, id, partitionKey);
+}
+
 try
 {
     await CreateDatabaseAndContainer(client, "TestDatabase1", "Container1", "/Category");
@@ -57,11 +64,13 @@ try
         price: 80
     );
 
-    Product createdProduct = await CreateItem(client, "TestDatabase", "Container", product, category);
+    // Product createdProduct = await CreateItem(client, "TestDatabase", "Container", product, category);
 
-    Product retrievedProduct = await GetItem<Product>(client, "TestDatabase", "Container", createdProduct.id, createdProduct.category);
+    // Product retrievedProduct = await GetItem<Product>(client, "TestDatabase", "Container", createdProduct.id, createdProduct.category);
 
-    Console.WriteLine(retrievedProduct);
+    // Console.WriteLine(retrievedProduct);
+
+    await DeleteItem<Product>(client, "TestDatabase", "Container", "d043df90-ab11-483b-abb6-b28424fa5a40", "games");
 }
 catch (Exception ex)
 {

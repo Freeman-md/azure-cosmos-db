@@ -57,4 +57,10 @@ class CosmosService
         );
     }
 
+    public async Task DeleteItem<T>(string databaseName, string containerName, string id, string partitionKey) {
+        Container container = GetContainer(databaseName, containerName);
+
+        await container.DeleteItemAsync<T>(id, new PartitionKey(partitionKey));
+    }
+
 }
