@@ -58,33 +58,41 @@ static async Task<List<T>> GetAllItems<T>(CosmosClient client, string databaseNa
     return await cosmosService.GetAllItems<T>(databaseName, containerName, partitionKey);
 }
 
-try
+// try
+// {
+CosmosService cosmosService = new CosmosService(client);
+
+await CreateDatabaseAndContainer(client, "TestDatabase1", "Container1", "/Category");
+
+string category = "games";
+Product[] products = new Product[20];
+
+for (int i = 0; i < 20; i++)
 {
-    await CreateDatabaseAndContainer(client, "TestDatabase1", "Container1", "/Category");
-
-    string category = "games";
-
-    Product product = new Product(
-        id: Guid.NewGuid().ToString(),
+    string id = Guid.NewGuid().ToString();
+    products[i] = new Product(
+        id: id,
         category: category,
-        name: "New Product",
+        name: "New Product " + id,
         price: 80
     );
-
-    Product createdProduct = await CreateItem(client, "TestDatabase", "Container", product, category);
-
-    // Product retrievedProduct = await GetItem<Product>(client, "TestDatabase", "Container", createdProduct.id, createdProduct.category);
-
-    // Console.WriteLine(retrievedProduct);
-
-    // await DeleteItem<Product>(client, "TestDatabase", "Container", "d043df90-ab11-483b-abb6-b28424fa5a40", "games");
-    List<Product> products = await GetAllItems<Product>(client, "TestDatabase", "Container", "games");
-
-    foreach (var item in products) {
-        Console.WriteLine(item);
-    }
 }
-catch (Exception ex)
-{
-    Console.WriteLine(ex.Message);
-}
+
+await cosmosService.BatchCreateItemsWithStoredProcedure("TestDatabase", "Container", category, products);
+
+
+// Product retrievedProduct = await GetItem<Product>(client, "TestDatabase", "Container", createdProduct.id, createdProduct.category);
+
+// Console.WriteLine(retrievedProduct);
+
+// await DeleteItem<Product>(client, "TestDatabase", "Container", "d043df90-ab11-483b-abb6-b28424fa5a40", "games");
+// List<Product> products = await GetAllItems<Product>(client, "TestDatabase", "Container", "games");
+
+// foreach (var item in products) {
+//     Console.WriteLine(item);
+//     // }
+// }
+// catch (Exception ex)
+// {
+//     Console.WriteLine(ex.Message);
+// }

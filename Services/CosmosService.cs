@@ -1,4 +1,6 @@
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Scripts;
+using Newtonsoft.Json;
 
 namespace azure_cosmos_db.Services;
 
@@ -90,5 +92,21 @@ class CosmosService
 
         return items;
     }
+
+    public async Task<StoredProcedureExecuteResponse<string>> BatchCreateItemsWithStoredProcedure(string databaseName, string containerName, string partitionKey, object[] items)
+{
+    // Serialize the items array before passing it to the stored procedure
+    string serializedItems = JsonConvert.SerializeObject(items);
+
+    return await _cosmosClient
+        .GetContainer(databaseName, containerName)
+        .Scripts
+        .ExecuteStoredProcedureAsync<string>(
+            "create-products",
+            new PartitionKey(partitionKey),
+            new[] { serializedItems }
+        );
+}
+
 
 }
