@@ -17,47 +17,53 @@ if (string.IsNullOrEmpty(cosmosDBURI))
 
 CosmosClient client = new CosmosClient(cosmosDBURI);
 
-static async Task CreateDatabaseAndContainer(CosmosClient client, string databaseName, string containerName, string partitionKey) {
-    try
-    {
-        CosmosService cosmosService = new CosmosService(client);
+static async Task CreateDatabaseAndContainer(CosmosClient client, string databaseName, string containerName, string partitionKey)
+{
+    CosmosService cosmosService = new CosmosService(client);
 
-        await cosmosService.CreateDatabase(databaseName);
+    await cosmosService.CreateDatabase(databaseName);
 
-        await cosmosService.CreateContainer(databaseName, containerName, partitionKey);
+    await cosmosService.CreateContainer(databaseName, containerName, partitionKey);
 
-        Database database = cosmosService.GetDatabase(databaseName);
+    Database database = cosmosService.GetDatabase(databaseName);
 
-        Container container = cosmosService.GetContainer(databaseName, containerName);
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine(ex.Message);
-    }
+    Container container = cosmosService.GetContainer(databaseName, containerName);
 }
 
-static async Task CreateItem(CosmosClient client, string databaseName, string containerName, object item, string itemPartitionKey) {
-    try
-    {
-        CosmosService cosmosService = new CosmosService(client);
+static async Task<ItemResponse<T>> CreateItem<T>(CosmosClient client, string databaseName, string containerName, T item, string itemPartitionKey)
+{
+    CosmosService cosmosService = new CosmosService(client);
 
-        await cosmosService.CreateItem(databaseName, containerName, item, itemPartitionKey);
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine(ex.Message);
-    }
+    return await cosmosService.CreateItem<T>(databaseName, containerName, item, itemPartitionKey);
 }
 
-await CreateDatabaseAndContainer(client, "TestDatabase1", "Container1", "/Category");
+static async Task<ItemResponse<T>> GetItem<T>(CosmosClient client, string databaseName, string containerName, string id, string partitionKey)
+{
+    CosmosService cosmosService = new CosmosService(client);
 
-string category = "games";
+    return await cosmosService.GetItem<T>(databaseName, containerName, id, partitionKey);
+}
 
-Product product = new Product(
-    id: Guid.NewGuid().ToString(),
-    category: category,
-    name: "New Product",
-    price: 80
-);
+try
+{
+    await CreateDatabaseAndContainer(client, "TestDatabase1", "Container1", "/Category");
 
-// await CreateItem(client, "TestDatabase", "Container", product, category);
+    string category = "games";
+
+    Product product = new Product(
+        id: Guid.NewGuid().ToString(),
+        category: category,
+        name: "New Product",
+        price: 80
+    );
+
+    Product createdProduct = await CreateItem(client, "TestDatabase", "Container", product, category);
+
+    Product retrievedProduct = await GetItem<Product>(client, "TestDatabase", "Container", createdProduct.id, createdProduct.category);
+
+    Console.WriteLine(retrievedProduct);
+}
+catch (Exception ex)
+{
+    Console.WriteLine(ex.Message);
+}

@@ -2,7 +2,7 @@ namespace Models.Product;
 
 public record Product(
     string id,
-    string? category,
+    string category,
     string name,
     decimal price,
     int? quantity = null,

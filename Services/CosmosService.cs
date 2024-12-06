@@ -39,12 +39,21 @@ class CosmosService
         return database.GetContainer(containerName);
     }
 
-    public async Task<ItemResponse<object>> CreateItem(string databaseName, string containerName, object item, string partitionKey) {
+    public async Task<ItemResponse<T>> CreateItem<T>(string databaseName, string containerName, T item, string partitionKey) {
         Container container = GetContainer(databaseName, containerName);
 
         return await container.UpsertItemAsync(
             item: item,
             partitionKey: new PartitionKey(partitionKey)
+        );
+    }
+
+    public async Task<ItemResponse<T>> GetItem<T>(string databaseName, string containerName, string id, string partitionKey) {
+        Container container = GetContainer(databaseName, containerName);
+
+        return await container.ReadItemAsync<T>(
+            id,
+            new PartitionKey(partitionKey)
         );
     }
 
