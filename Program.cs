@@ -78,7 +78,9 @@ for (int i = 0; i < 20; i++)
     );
 }
 
-await cosmosService.BatchCreateItemsWithStoredProcedure("TestDatabase", "Container", category, products);
+// await cosmosService.BatchCreateItemsWithStoredProcedure("TestDatabase", "Container", category, products);
+
+await cosmosService.CreateStoredProcedure("TestDatabase", "Container", "delete-products");
 
 
 // Product retrievedProduct = await GetItem<Product>(client, "TestDatabase", "Container", createdProduct.id, createdProduct.category);
@@ -87,10 +89,6 @@ await cosmosService.BatchCreateItemsWithStoredProcedure("TestDatabase", "Contain
 
 // await DeleteItem<Product>(client, "TestDatabase", "Container", "d043df90-ab11-483b-abb6-b28424fa5a40", "games");
 // List<Product> products = await GetAllItems<Product>(client, "TestDatabase", "Container", "games");
-
-// foreach (var item in products) {
-//     Console.WriteLine(item);
-//     // }
 // }
 // catch (Exception ex)
 // {

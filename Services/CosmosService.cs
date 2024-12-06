@@ -94,19 +94,28 @@ class CosmosService
     }
 
     public async Task<StoredProcedureExecuteResponse<string>> BatchCreateItemsWithStoredProcedure(string databaseName, string containerName, string partitionKey, object[] items)
-{
-    // Serialize the items array before passing it to the stored procedure
-    string serializedItems = JsonConvert.SerializeObject(items);
+    {
+        // Serialize the items array before passing it to the stored procedure
+        string serializedItems = JsonConvert.SerializeObject(items);
 
-    return await _cosmosClient
-        .GetContainer(databaseName, containerName)
-        .Scripts
-        .ExecuteStoredProcedureAsync<string>(
-            "create-products",
-            new PartitionKey(partitionKey),
-            new[] { serializedItems }
-        );
-}
+        return await _cosmosClient
+            .GetContainer(databaseName, containerName)
+            .Scripts
+            .ExecuteStoredProcedureAsync<string>(
+                "create-products",
+                new PartitionKey(partitionKey),
+                new[] { serializedItems }
+            );
+    }
+
+    public async Task CreateStoredProcedure(string databaseName, string containerName, string storedProcedureId)
+    {
+        StoredProcedureResponse storedProcedureResponse = await _cosmosClient.GetContainer(databaseName, containerName).Scripts.CreateStoredProcedureAsync(new StoredProcedureProperties
+        {
+            Id = storedProcedureId,
+            Body = File.ReadAllText($@"..\stored-procedures\{storedProcedureId}.js")
+        });
+    }
 
 
 }
